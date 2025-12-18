@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0;background:black;">
+<canvas id="c"></canvas>
+<script>
+const c = document.getElementById("c");
+const x = c.getContext("2d");
+function resize(){
+  c.width = innerWidth;
+  c.height = innerHeight;
+}
+resize(); onresize = resize;
+
+const chars = [".","o","0","+","*"];
+const spacing = 8;
+x.font = "10px 'JetBrains Mono'";
+x.textAlign = "center";
+x.textBaseline = "middle";
+
+function field(px,py,cx,cy,r){
+  const d = Math.hypot(px-cx,py-cy);
+  return Math.max(0,1-d/r);
+}
+
+for(let y=0;y<c.height;y+=spacing){
+  for(let xPos=0;xPos<c.width;xPos+=spacing){
+
+    let b =
+      field(xPos,y,c.width*0.5,c.height*0.35,500) +
+      field(xPos,y,c.width*0.3,c.height*0.45,400) +
+      field(xPos,y,c.width*0.7,c.height*0.45,400);
+
+    b += (Math.random()-0.5)*0.1;
+    b = Math.min(Math.max(b,0),1);
+
+    const gold = `rgba(255,211,106,${b})`;
+    const ch = chars[Math.floor(Math.random()*chars.length)];
+
+    x.fillStyle = gold;
+    x.fillText(ch,xPos,y);
+  }
+}
+</script>
+</body>
+</html>
