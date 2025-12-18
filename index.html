@@ -1,43 +1,73 @@
 <!DOCTYPE html>
 <html>
-<body style="margin:0;background:black;">
+<head>
+<meta charset="UTF-8">
+<title>Dot Field</title>
+<style>
+  body { margin:0; background:black; overflow:hidden; }
+  canvas { display:block; filter: blur(0.35px); }
+</style>
+</head>
+<body>
 <canvas id="c"></canvas>
+
 <script>
 const c = document.getElementById("c");
-const x = c.getContext("2d");
+const ctx = c.getContext("2d");
+
 function resize(){
   c.width = innerWidth;
   c.height = innerHeight;
 }
-resize(); onresize = resize;
+resize();
+onresize = resize;
 
-const chars = [".","o","0","+","*"];
+// grid
 const spacing = 8;
-x.font = "10px 'JetBrains Mono'";
-x.textAlign = "center";
-x.textBaseline = "middle";
+const chars = ["·",".","o","0","+",""];
+ctx.font = "10px monospace";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
 
-function field(px,py,cx,cy,r){
-  const d = Math.hypot(px-cx,py-cy);
-  return Math.max(0,1-d/r);
+// deterministic noise
+function hash(x,y){
+  return Math.abs(Math.sin(x12.9898 + y78.233)) % 1;
 }
 
+// vertical arch field
+function arch(x,y,cx,cy,w,h){
+  const dx = Math.abs(x - cx) / w;
+  const dy = Math.abs(y - cy) / h;
+  return Math.max(0, 1 - (dxdx + dydy));
+}
+
+ctx.clearRect(0,0,c.width,c.height);
+
 for(let y=0;y<c.height;y+=spacing){
-  for(let xPos=0;xPos<c.width;xPos+=spacing){
+  for(let x=0;x<c.width;x+=spacing){
 
-    let b =
-      field(xPos,y,c.width*0.5,c.height*0.35,500) +
-      field(xPos,y,c.width*0.3,c.height*0.45,400) +
-      field(xPos,y,c.width*0.7,c.height*0.45,400);
+    let b = 0;
 
-    b += (Math.random()-0.5)*0.1;
+    // main arches
+    b += arch(x,y,c.width0.5,c.height0.38,260,360);
+    b += arch(x,y,c.width0.25,c.height0.5,200,300);
+    b += arch(x,y,c.width0.75,c.height0.5,200,300);
+
+    // repetition
+    b += arch(x,y,c.width0.5,c.height0.75,300,200);
+
+    // micro texture
+    b += hash(x,y) 0.15;
+
     b = Math.min(Math.max(b,0),1);
 
-    const gold = `rgba(255,211,106,${b})`;
-    const ch = chars[Math.floor(Math.random()*chars.length)];
+    // brightness → character
+    const ci = Math.floor(b * (chars.length-1));
+    const ch = chars[ci];
 
-    x.fillStyle = gold;
-    x.fillText(ch,xPos,y);
+    // gold color ramp
+    ctx.fillStyle = rgba(255,210,120,${0.15 + b*0.85});
+    ctx.fillText(ch,x,y);
   }
 }
 </script>
