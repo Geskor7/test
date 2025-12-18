@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Dot Field</title>
 <style>
   body { margin:0; background:black; overflow:hidden; }
-  canvas { display:block; filter: blur(0.35px); }
+  canvas { display:block; filter: blur(0.5px); }
 </style>
 </head>
 <body>
@@ -15,61 +15,65 @@
 const c = document.getElementById("c");
 const ctx = c.getContext("2d");
 
+// Resize canvas to full window
 function resize(){
   c.width = innerWidth;
   c.height = innerHeight;
+  draw();
 }
-resize();
-onresize = resize;
+window.addEventListener('resize', resize);
 
-// grid
-const spacing = 8;
+// Grid settings
+const spacing = 12;
 const chars = ["·",".","o","0","+",""];
-ctx.font = "10px monospace";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
 
-// deterministic noise
+// Deterministic noise
 function hash(x,y){
   return Math.abs(Math.sin(x12.9898 + y78.233)) % 1;
 }
 
-// vertical arch field
+// Vertical arch function
 function arch(x,y,cx,cy,w,h){
   const dx = Math.abs(x - cx) / w;
   const dy = Math.abs(y - cy) / h;
   return Math.max(0, 1 - (dxdx + dydy));
 }
 
-ctx.clearRect(0,0,c.width,c.height);
+// Draw the field
+function draw(){
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.font = "14px monospace";
 
-for(let y=0;y<c.height;y+=spacing){
-  for(let x=0;x<c.width;x+=spacing){
+  for(let y=0; y<c.height; y+=spacing){
+    for(let x=0; x<c.width; x+=spacing){
+      let b = 0;
 
-    let b = 0;
+      // Main arches (scaled to canvas size)
+      b += arch(x,y,c.width0.5,c.height0.38,c.width0.3,c.height0.3);
+      b += arch(x,y,c.width0.25,c.height0.5,c.width0.25,c.height0.25);
+      b += arch(x,y,c.width0.75,c.height0.5,c.width0.25,c.height0.25);
+      b += arch(x,y,c.width0.5,c.height0.75,c.width0.3,c.height0.2);
 
-    // main arches
-    b += arch(x,y,c.width0.5,c.height0.38,260,360);
-    b += arch(x,y,c.width0.25,c.height0.5,200,300);
-    b += arch(x,y,c.width0.75,c.height0.5,200,300);
+      // Micro texture
+      b += hash(x,y)0.15;
 
-    // repetition
-    b += arch(x,y,c.width0.5,c.height0.75,300,200);
+      b = Math.min(Math.max(b,0),1);
 
-    // micro texture
-    b += hash(x,y) 0.15;
+      // Map brightness to character
+      const ci = Math.floor(b * (chars.length-1));
+      const ch = chars[ci];
 
-    b = Math.min(Math.max(b,0),1);
-
-    // brightness → character
-    const ci = Math.floor(b * (chars.length-1));
-    const ch = chars[ci];
-
-    // gold color ramp
-    ctx.fillStyle = rgba(255,210,120,${0.15 + b*0.85});
-    ctx.fillText(ch,x,y);
+      // Gold color ramp with visible alpha
+      ctx.fillStyle = rgba(255,210,120,${0.3 + b*0.7});
+      ctx.fillText(ch, x, y);
+    }
   }
 }
+
+// Initial draw
+resize();
 </script>
 </body>
 </html>
