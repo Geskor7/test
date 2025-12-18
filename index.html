@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dot Field</title>
+<title>Visible Animated Dot Field</title>
 <style>
   body { margin:0; background:black; overflow:hidden; }
-  canvas { display:block; filter: blur(0.5px); }
+  canvas { display:block; filter: blur(0.7px); }
 </style>
 </head>
 <body>
@@ -15,65 +15,60 @@
 const c = document.getElementById("c");
 const ctx = c.getContext("2d");
 
-// Resize canvas to full window
 function resize(){
   c.width = innerWidth;
   c.height = innerHeight;
-  draw();
 }
 window.addEventListener('resize', resize);
+resize();
 
-// Grid settings
-const spacing = 12;
+const spacing = 16;  // bigger spacing
 const chars = ["·",".","o","0","+",""];
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
 
-// Deterministic noise
 function hash(x,y){
   return Math.abs(Math.sin(x12.9898 + y78.233)) % 1;
 }
 
-// Vertical arch function
 function arch(x,y,cx,cy,w,h){
   const dx = Math.abs(x - cx) / w;
   const dy = Math.abs(y - cy) / h;
   return Math.max(0, 1 - (dxdx + dydy));
 }
 
-// Draw the field
-function draw(){
+function draw(time){
   ctx.clearRect(0,0,c.width,c.height);
-  ctx.font = "14px monospace";
+  ctx.font = "18px monospace";  // bigger font
 
   for(let y=0; y<c.height; y+=spacing){
     for(let x=0; x<c.width; x+=spacing){
       let b = 0;
 
-      // Main arches (scaled to canvas size)
       b += arch(x,y,c.width0.5,c.height0.38,c.width0.3,c.height0.3);
       b += arch(x,y,c.width0.25,c.height0.5,c.width0.25,c.height0.25);
       b += arch(x,y,c.width0.75,c.height0.5,c.width0.25,c.height0.25);
       b += arch(x,y,c.width0.5,c.height0.75,c.width0.3,c.height0.2);
 
-      // Micro texture
-      b += hash(x,y)0.15;
+      const noise = hash(x,y);
+      const flicker = 0.15 Math.sin(time0.003 + noise10); // stronger flicker
+      b += noise0.2 + flicker;
 
       b = Math.min(Math.max(b,0),1);
 
-      // Map brightness to character
-      const ci = Math.floor(b * (chars.length-1));
+      const ci = Math.floor(b (chars.length-1));
       const ch = chars[ci];
 
-      // Gold color ramp with visible alpha
-      ctx.fillStyle = rgba(255,210,120,${0.3 + b*0.7});
+      // stronger alpha so dots are visible
+      ctx.fillStyle = rgba(255,210,120,${0.5 + b*0.5});
       ctx.fillText(ch, x, y);
     }
   }
+
+  requestAnimationFrame(draw);
 }
 
-// Initial draw
-resize();
+requestAnimationFrame(draw);
 </script>
 </body>
 </html>
